@@ -53,9 +53,15 @@ func initLastCap() error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
-	fmt.Fscanf(f, "%d", &capLastCap)
-	f.Close()
+	var b []byte = make([]byte, 11)
+	_, err = f.Read(b)
+	if err != nil {
+		return err
+	}
+
+	fmt.Sscanf(string(b), "%d", &capLastCap)
 
 	return nil
 }
