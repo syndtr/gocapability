@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	capVers uint32
+	capVers    uint32
 	capLastCap Cap
 )
 
@@ -33,6 +33,15 @@ func init() {
 	var hdr capHeader
 	capget(&hdr, nil)
 	capVers = hdr.version
+
+	if initLastCap() == nil {
+		CAP_LAST_CAP = capLastCap
+		if capLastCap > 31 {
+			capUpperMask = (uint32(1) << (uint(capLastCap) - 31)) - 1
+		} else {
+			capUpperMask = 0
+		}
+	}
 }
 
 func initLastCap() error {

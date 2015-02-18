@@ -6,12 +6,6 @@
 
 package capability
 
-import (
-	"io/ioutil"
-	"strconv"
-	"strings"
-)
-
 type CapType uint
 
 func (c CapType) String() string {
@@ -349,26 +343,3 @@ var (
 
 	capUpperMask = ^uint32(0)
 )
-
-func getLastCap() (Cap, error) {
-	str, err := ioutil.ReadFile("/proc/sys/kernel/cap_last_cap")
-	if err != nil {
-		return 0, err
-	}
-	val, err := strconv.Atoi(strings.TrimSpace(string(str)))
-	if err != nil {
-		return 0, err
-	}
-	return Cap(val), nil
-}
-
-func init() {
-	if lastCap, err := getLastCap(); err == nil {
-		CAP_LAST_CAP = lastCap
-		if lastCap > 31 {
-			capUpperMask = (uint32(1) << (uint(lastCap) - 31)) - 1
-		} else {
-			capUpperMask = 0
-		}
-	}
-}
