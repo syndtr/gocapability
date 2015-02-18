@@ -6,6 +6,12 @@
 
 package capability
 
+import (
+	"io/ioutil"
+	"strconv"
+	"strings"
+)
+
 type CapType uint
 
 func (c CapType) String() string {
@@ -118,9 +124,8 @@ func (c Cap) String() string {
 	return "unknown"
 }
 
+// POSIX-draft defined capabilities.
 const (
-	// POSIX-draft defined capabilities.
-
 	// In a system with the [_POSIX_CHOWN_RESTRICTED] option defined, this
 	// overrides the restriction of changing file ownership and group
 	// ownership.
@@ -336,8 +341,34 @@ const (
 
 	// Allow reading audit messages from the kernel
 	CAP_AUDIT_READ = Cap(37)
-
-	CAP_LAST_CAP = CAP_AUDIT_READ
 )
 
-const capUpperMask = (uint32(1) << (uint(CAP_LAST_CAP) - 31)) - 1
+var (
+	// Highest valid capability of the running kernel.
+	CAP_LAST_CAP = Cap(63)
+
+	capUpperMask = ^uint32(0)
+)
+
+func getLastCap() (Cap, error) {
+	str, err := ioutil.ReadFile("/proc/sys/kernel/cap_last_cap")
+	if err != nil {
+		return 0, err
+	}
+	val, err := strconv.Atoi(strings.TrimSpace(string(str)))
+	if err != nil {
+		return 0, err
+	}
+	return Cap(val), nil
+}
+
+func init() {
+	if lastCap, err := getLastCap(); err == nil {
+		CAP_LAST_CAP = lastCap
+		if lastCap > 31 {
+			capUpperMask = (uint32(1) << (uint(lastCap) - 31)) - 1
+		} else {
+			capUpperMask = 0
+		}
+	}
+}
