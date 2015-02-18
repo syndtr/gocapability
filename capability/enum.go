@@ -112,6 +112,8 @@ func (c Cap) String() string {
 		return "wake_alarm"
 	case CAP_BLOCK_SUSPEND:
 		return "block_suspend"
+	case CAP_AUDIT_READ:
+		return "audit_read"
 	}
 	return "unknown"
 }
@@ -332,7 +334,10 @@ const (
 	// Allow preventing system suspends
 	CAP_BLOCK_SUSPEND Cap = 36
 
-	CAP_LAST_CAP = CAP_BLOCK_SUSPEND
+	// Allow reading audit messages from the kernel
+	CAP_AUDIT_READ Cap = 37
+
+	CAP_LAST_CAP = CAP_AUDIT_READ
 )
 
 const capUpperMask = (uint32(1) << (uint(CAP_LAST_CAP) - 31)) - 1
