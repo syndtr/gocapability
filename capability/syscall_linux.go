@@ -128,8 +128,6 @@ func setVfsCap(path string, data *vfscapData) (err error) {
 		data.magic = vfsCapVer2
 		if data.effective[0] != 0 || data.effective[1] != 0 {
 			data.magic |= vfsCapFlageffective
-			data.data[0].permitted |= data.effective[0]
-			data.data[1].permitted |= data.effective[1]
 		}
 		size = vfscapDataSizeV2
 	} else {
