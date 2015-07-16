@@ -86,6 +86,10 @@ func getVfsCap(path string, dest *vfscapData) (err error) {
 	}
 	r0, _, e1 := syscall.Syscall6(syscall.SYS_GETXATTR, uintptr(unsafe.Pointer(_p0)), uintptr(unsafe.Pointer(_vfsXattrName)), uintptr(unsafe.Pointer(dest)), vfscapDataSizeV2, 0, 0)
 	if e1 != 0 {
+		if e1 == syscall.ENODATA {
+			dest.version = 2
+			return
+		}
 		err = e1
 	}
 	switch dest.magic & vfsCapVerMask {
