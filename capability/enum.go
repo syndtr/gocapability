@@ -41,7 +41,9 @@ const (
 //go:generate go run enumgen/gen.go
 type Cap int
 
-// POSIX-draft defined capabilities.
+// POSIX-draft defined capabilities and Linux extensions.
+//
+// Defined in https://github.com/torvalds/linux/blob/master/include/uapi/linux/capability.h
 const (
 	// In a system with the [_POSIX_CHOWN_RESTRICTED] option defined, this
 	// overrides the restriction of changing file ownership and group
@@ -258,6 +260,18 @@ const (
 
 	// Allow reading audit messages from the kernel
 	CAP_AUDIT_READ = Cap(37)
+
+	// Allow system performance and observability privileged operations.
+	// Introduced in kernel 5.8.
+	CAP_PERFMON = Cap(38)
+
+	// Allow several BPF operations.
+	// Introduced in kernel 5.8.
+	CAP_BPF = Cap(39)
+
+	// Allow checkpoint/restore related operations.
+	// Introduced in kernel 5.9
+	CAP_CHECKPOINT_RESTORE = Cap(40)
 )
 
 var (
