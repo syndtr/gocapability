@@ -84,6 +84,8 @@ func (c Cap) String() string {
 		return "perfmon"
 	case CAP_BPF:
 		return "bpf"
+	case CAP_CHECKPOINT_RESTORE:
+		return "checkpoint_restore"
 	}
 	return "unknown"
 }
@@ -131,5 +133,6 @@ func List() []Cap {
 		CAP_AUDIT_READ,
 		CAP_PERFMON,
 		CAP_BPF,
+		CAP_CHECKPOINT_RESTORE,
 	}
 }
