@@ -203,10 +203,14 @@ func (c *capsV1) Fill(kind CapType) {
 	}
 }
 
-func (c *capsV1) Clear(kind CapType) {
-	if kind&CAPS == CAPS {
+func (c *capsV1) Clear(which CapType) {
+	if which&EFFECTIVE != 0 {
 		c.data.effective = 0
+	}
+	if which&PERMITTED != 0 {
 		c.data.permitted = 0
+	}
+	if which&INHERITABLE != 0 {
 		c.data.inheritable = 0
 	}
 }
@@ -367,21 +371,24 @@ func (c *capsV3) Fill(kind CapType) {
 	}
 }
 
-func (c *capsV3) Clear(kind CapType) {
-	if kind&CAPS == CAPS {
+func (c *capsV3) Clear(which CapType) {
+	if which&EFFECTIVE != 0 {
 		c.data[0].effective = 0
-		c.data[0].permitted = 0
-		c.data[0].inheritable = 0
 		c.data[1].effective = 0
+	}
+	if which&PERMITTED != 0 {
+		c.data[0].permitted = 0
 		c.data[1].permitted = 0
+	}
+	if which&INHERITABLE != 0 {
+		c.data[0].inheritable = 0
 		c.data[1].inheritable = 0
 	}
-
-	if kind&BOUNDS == BOUNDS {
+	if which&BOUNDS == BOUNDS {
 		c.bounds[0] = 0
 		c.bounds[1] = 0
 	}
-	if kind&AMBS == AMBS {
+	if which&AMBS == AMBS {
 		c.ambient[0] = 0
 		c.ambient[1] = 0
 	}
@@ -609,14 +616,22 @@ func (c *capsFile) Fill(kind CapType) {
 	}
 }
 
-func (c *capsFile) Clear(kind CapType) {
-	if kind&CAPS == CAPS {
+func (c *capsFile) Clear(which CapType) {
+	if which&EFFECTIVE != 0 {
 		c.data.effective[0] = 0
-		c.data.data[0].permitted = 0
-		c.data.data[0].inheritable = 0
 		if c.data.version == 2 {
 			c.data.effective[1] = 0
+		}
+	}
+	if which&PERMITTED != 0 {
+		c.data.data[0].permitted = 0
+		if c.data.version == 2 {
 			c.data.data[1].permitted = 0
+		}
+	}
+	if which&INHERITABLE != 0 {
+		c.data.data[0].inheritable = 0
+		if c.data.version == 2 {
 			c.data.data[1].inheritable = 0
 		}
 	}

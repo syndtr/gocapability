@@ -79,5 +79,13 @@ func TestState(t *testing.T) {
 		testPartial(tc.name, tc.c, PERMITTED)
 		tc.c.Clear(CAPS | BOUNDS)
 		testEmpty(tc.name, tc.c, tc.sets)
+		tc.c.Fill(CAPS)
+		tc.c.Clear(EFFECTIVE)
+		if !tc.c.Empty(EFFECTIVE) {
+			t.Errorf("%s: Clear(EFFECTIVE) doesn't work", tc.name)
+		}
+		if tc.c.Empty(PERMITTED) {
+			t.Errorf("%s: Clear(EFFECTIVE) has effect on PERMITTED", tc.name)
+		}
 	}
 }

@@ -39,9 +39,9 @@ type Capabilities interface {
 	Fill(kind CapType)
 
 	// Clear sets all bits of the given capabilities kind to zero. The
-	// 'kind' value should be one or combination (OR'ed) of CAPS,
-	// BOUNDS or AMBS.
-	Clear(kind CapType)
+	// 'which' value should be one or combination (OR'ed) of EFFECTIVE,
+	// PERMITTED, INHERITABLE, BOUNDING or AMBIENT.
+	Clear(which CapType)
 
 	// String return current capabilities state of the given capabilities
 	// set as string. The 'which' value should be one of EFFECTIVE,
