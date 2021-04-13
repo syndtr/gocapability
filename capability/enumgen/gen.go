@@ -24,7 +24,8 @@ type generator struct {
 func (g *generator) writeHeader() {
 	g.buf.WriteString("// generated file; DO NOT EDIT - use go generate in directory with source\n")
 	g.buf.WriteString("\n")
-	g.buf.WriteString("package capability")
+	g.buf.WriteString("package capability\n")
+	g.buf.WriteString("import \"strings\"")
 }
 
 func (g *generator) writeStringFunc() {
@@ -52,6 +53,20 @@ func (g *generator) writeListFunc() {
 	g.buf.WriteString("}\n")
 }
 
+func (g *generator) writeParseFunc() {
+	g.buf.WriteString("\n")
+	g.buf.WriteString("func Parse(s string) (Cap, bool) {\n")
+	g.buf.WriteString("s = strings.TrimPrefix(strings.ToLower(s), \"cap_\")\n")
+	g.buf.WriteString("switch s {\n")
+	for _, cap := range g.caps {
+		fmt.Fprintf(&g.buf, "case \"%s\":\n", strings.ToLower(cap[4:]))
+		fmt.Fprintf(&g.buf, "return %s, true\n", cap)
+	}
+	g.buf.WriteString("}\n")
+	g.buf.WriteString("return -1, false\n")
+	g.buf.WriteString("}\n")
+}
+
 func main() {
 	fs := token.NewFileSet()
 	parsedFile, err := parser.ParseFile(fs, fileName, nil, 0)
@@ -76,6 +91,7 @@ func main() {
 	g.writeHeader()
 	g.writeStringFunc()
 	g.writeListFunc()
+	g.writeParseFunc()
 	src, err := format.Source(g.buf.Bytes())
 	if err != nil {
 		fmt.Println("generated invalid Go code")
