@@ -2,6 +2,8 @@
 
 package capability
 
+import "strings"
+
 func (c Cap) String() string {
 	switch c {
 	case CAP_CHOWN:
@@ -135,4 +137,93 @@ func List() []Cap {
 		CAP_BPF,
 		CAP_CHECKPOINT_RESTORE,
 	}
+}
+
+func Parse(s string) (Cap, bool) {
+	s = strings.TrimPrefix(strings.ToLower(s), "cap_")
+	switch s {
+	case "chown":
+		return CAP_CHOWN, true
+	case "dac_override":
+		return CAP_DAC_OVERRIDE, true
+	case "dac_read_search":
+		return CAP_DAC_READ_SEARCH, true
+	case "fowner":
+		return CAP_FOWNER, true
+	case "fsetid":
+		return CAP_FSETID, true
+	case "kill":
+		return CAP_KILL, true
+	case "setgid":
+		return CAP_SETGID, true
+	case "setuid":
+		return CAP_SETUID, true
+	case "setpcap":
+		return CAP_SETPCAP, true
+	case "linux_immutable":
+		return CAP_LINUX_IMMUTABLE, true
+	case "net_bind_service":
+		return CAP_NET_BIND_SERVICE, true
+	case "net_broadcast":
+		return CAP_NET_BROADCAST, true
+	case "net_admin":
+		return CAP_NET_ADMIN, true
+	case "net_raw":
+		return CAP_NET_RAW, true
+	case "ipc_lock":
+		return CAP_IPC_LOCK, true
+	case "ipc_owner":
+		return CAP_IPC_OWNER, true
+	case "sys_module":
+		return CAP_SYS_MODULE, true
+	case "sys_rawio":
+		return CAP_SYS_RAWIO, true
+	case "sys_chroot":
+		return CAP_SYS_CHROOT, true
+	case "sys_ptrace":
+		return CAP_SYS_PTRACE, true
+	case "sys_pacct":
+		return CAP_SYS_PACCT, true
+	case "sys_admin":
+		return CAP_SYS_ADMIN, true
+	case "sys_boot":
+		return CAP_SYS_BOOT, true
+	case "sys_nice":
+		return CAP_SYS_NICE, true
+	case "sys_resource":
+		return CAP_SYS_RESOURCE, true
+	case "sys_time":
+		return CAP_SYS_TIME, true
+	case "sys_tty_config":
+		return CAP_SYS_TTY_CONFIG, true
+	case "mknod":
+		return CAP_MKNOD, true
+	case "lease":
+		return CAP_LEASE, true
+	case "audit_write":
+		return CAP_AUDIT_WRITE, true
+	case "audit_control":
+		return CAP_AUDIT_CONTROL, true
+	case "setfcap":
+		return CAP_SETFCAP, true
+	case "mac_override":
+		return CAP_MAC_OVERRIDE, true
+	case "mac_admin":
+		return CAP_MAC_ADMIN, true
+	case "syslog":
+		return CAP_SYSLOG, true
+	case "wake_alarm":
+		return CAP_WAKE_ALARM, true
+	case "block_suspend":
+		return CAP_BLOCK_SUSPEND, true
+	case "audit_read":
+		return CAP_AUDIT_READ, true
+	case "perfmon":
+		return CAP_PERFMON, true
+	case "bpf":
+		return CAP_BPF, true
+	case "checkpoint_restore":
+		return CAP_CHECKPOINT_RESTORE, true
+	}
+	return -1, false
 }
