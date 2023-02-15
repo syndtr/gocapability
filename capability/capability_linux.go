@@ -401,11 +401,8 @@ func (c *capsV3) Load() (err error) {
 		return
 	}
 
-	var status_path string
-
-	if c.hdr.pid == 0 {
-		status_path = fmt.Sprintf("/proc/self/status")
-	} else {
+	status_path := "/proc/self/status"
+	if c.hdr.pid != 0 {
 		status_path = fmt.Sprintf("/proc/%d/status", c.hdr.pid)
 	}
 
