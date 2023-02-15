@@ -31,7 +31,7 @@ var (
 
 func init() {
 	var hdr capHeader
-	capget(&hdr, nil)
+	_ = capget(&hdr, nil)
 	capVers = hdr.version
 
 	if initLastCap() == nil {
