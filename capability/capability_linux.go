@@ -474,11 +474,14 @@ func (c *capsV3) Apply(kind CapType) (err error) {
 			if c.Get(AMBIENT, i) {
 				action = pr_CAP_AMBIENT_RAISE
 			}
-			err := prctl(pr_CAP_AMBIENT, action, uintptr(i), 0, 0)
-			// Ignore EINVAL as not supported on kernels before 4.3
-			if errno, ok := err.(syscall.Errno); ok && errno == syscall.EINVAL {
-				err = nil
-				continue
+			err = prctl(pr_CAP_AMBIENT, action, uintptr(i), 0, 0)
+			if err != nil {
+				// Ignore EINVAL as not supported on kernels before 4.3
+				if errno, ok := err.(syscall.Errno); ok && errno == syscall.EINVAL {
+					err = nil
+					continue
+				}
+				return
 			}
 		}
 	}
