@@ -16,8 +16,6 @@ import (
 	"syscall"
 )
 
-var errUnknownVers = errors.New("unknown capability version")
-
 const (
 	linuxCapVer1 = 0x19980330
 	linuxCapVer2 = 0x20071026
@@ -100,19 +98,21 @@ func mkString(c Capabilities, max CapType) (ret string) {
 
 func newPid(pid int) (c Capabilities, err error) {
 	switch capVers {
+	case 0:
+		err = errors.New("unable to get capability version from the kernel")
 	case linuxCapVer1:
 		p := new(capsV1)
 		p.hdr.version = capVers
 		p.hdr.pid = int32(pid)
 		c = p
-	case linuxCapVer2, linuxCapVer3:
+	default:
+		// linuxCapVer2, linuxCapVer3, or an unknown/future version such as v4.
+		// In the latter case, we fall back to v3 hoping the kernel is
+		// backward-compatible to v3.
 		p := new(capsV3)
 		p.hdr.version = capVers
 		p.hdr.pid = int32(pid)
 		c = p
-	default:
-		err = errUnknownVers
-		return
 	}
 	return
 }
