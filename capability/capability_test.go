@@ -51,7 +51,6 @@ func TestState(t *testing.T) {
 		sets CapType
 		max  Cap
 	}{
-		{"v1", new(capsV1), EFFECTIVE | PERMITTED, CAP_AUDIT_CONTROL},
 		{"v3", new(capsV3), EFFECTIVE | PERMITTED | BOUNDING, CAP_LAST_CAP},
 		{"file_v1", new(capsFile), EFFECTIVE | PERMITTED, CAP_AUDIT_CONTROL},
 		{"file_v2", capf, EFFECTIVE | PERMITTED, CAP_LAST_CAP},

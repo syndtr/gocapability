@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	linuxCapVer1 = 0x19980330
-	linuxCapVer2 = 0x20071026
+	linuxCapVer1 = 0x19980330 // No longer supported.
+	linuxCapVer2 = 0x20071026 // No longer supported.
 	linuxCapVer3 = 0x20080522
 )
 
@@ -100,13 +100,10 @@ func newPid(pid int) (c Capabilities, err error) {
 	switch capVers {
 	case 0:
 		err = errors.New("unable to get capability version from the kernel")
-	case linuxCapVer1:
-		p := new(capsV1)
-		p.hdr.version = capVers
-		p.hdr.pid = int32(pid)
-		c = p
+	case linuxCapVer1, linuxCapVer2:
+		err = errors.New("old/unsupported capability version (kernel older than 2.6.26?)")
 	default:
-		// linuxCapVer2, linuxCapVer3, or an unknown/future version such as v4.
+		// Either linuxCapVer3, or an unknown/future version such as v4.
 		// In the latter case, we fall back to v3 hoping the kernel is
 		// backward-compatible to v3.
 		p := new(capsV3)
@@ -115,119 +112,6 @@ func newPid(pid int) (c Capabilities, err error) {
 		c = p
 	}
 	return
-}
-
-type capsV1 struct {
-	hdr  capHeader
-	data capData
-}
-
-func (c *capsV1) Get(which CapType, what Cap) bool {
-	if what > 32 {
-		return false
-	}
-
-	switch which {
-	case EFFECTIVE:
-		return (1<<uint(what))&c.data.effective != 0
-	case PERMITTED:
-		return (1<<uint(what))&c.data.permitted != 0
-	case INHERITABLE:
-		return (1<<uint(what))&c.data.inheritable != 0
-	}
-
-	return false
-}
-
-func (c *capsV1) getData(which CapType) (ret uint32) {
-	switch which {
-	case EFFECTIVE:
-		ret = c.data.effective
-	case PERMITTED:
-		ret = c.data.permitted
-	case INHERITABLE:
-		ret = c.data.inheritable
-	}
-	return
-}
-
-func (c *capsV1) Empty(which CapType) bool {
-	return c.getData(which) == 0
-}
-
-func (c *capsV1) Full(which CapType) bool {
-	return (c.getData(which) & 0x7fffffff) == 0x7fffffff
-}
-
-func (c *capsV1) Set(which CapType, caps ...Cap) {
-	for _, what := range caps {
-		if what > 32 {
-			continue
-		}
-
-		if which&EFFECTIVE != 0 {
-			c.data.effective |= 1 << uint(what)
-		}
-		if which&PERMITTED != 0 {
-			c.data.permitted |= 1 << uint(what)
-		}
-		if which&INHERITABLE != 0 {
-			c.data.inheritable |= 1 << uint(what)
-		}
-	}
-}
-
-func (c *capsV1) Unset(which CapType, caps ...Cap) {
-	for _, what := range caps {
-		if what > 32 {
-			continue
-		}
-
-		if which&EFFECTIVE != 0 {
-			c.data.effective &= ^(1 << uint(what))
-		}
-		if which&PERMITTED != 0 {
-			c.data.permitted &= ^(1 << uint(what))
-		}
-		if which&INHERITABLE != 0 {
-			c.data.inheritable &= ^(1 << uint(what))
-		}
-	}
-}
-
-func (c *capsV1) Fill(kind CapType) {
-	if kind&CAPS == CAPS {
-		c.data.effective = 0x7fffffff
-		c.data.permitted = 0x7fffffff
-		c.data.inheritable = 0
-	}
-}
-
-func (c *capsV1) Clear(kind CapType) {
-	if kind&CAPS == CAPS {
-		c.data.effective = 0
-		c.data.permitted = 0
-		c.data.inheritable = 0
-	}
-}
-
-func (c *capsV1) StringCap(which CapType) (ret string) {
-	return mkStringCap(c, which)
-}
-
-func (c *capsV1) String() (ret string) {
-	return mkString(c, BOUNDING)
-}
-
-func (c *capsV1) Load() (err error) {
-	return capget(&c.hdr, &c.data)
-}
-
-func (c *capsV1) Apply(kind CapType) error {
-	if kind&CAPS == CAPS {
-		return capset(&c.hdr, &c.data)
-	}
-	return nil
 }
 
 type capsV3 struct {
