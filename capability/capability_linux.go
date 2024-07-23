@@ -13,6 +13,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 	"syscall"
 )
 
@@ -27,21 +28,32 @@ const (
 var (
 	capVers    uint32
 	capLastCap Cap
+	once       sync.Once
 )
 
-func init() {
-	var hdr capHeader
-	capget(&hdr, nil)
-	capVers = hdr.version
+func getCapMaskCapLast() (uint32, Cap) {
+	once.Do(func() {
+		var hdr capHeader
+		capget(&hdr, nil)
+		capVers = hdr.version
 
-	if initLastCap() == nil {
-		CAP_LAST_CAP = capLastCap
-		if capLastCap > 31 {
-			capUpperMask = (uint32(1) << (uint(capLastCap) - 31)) - 1
-		} else {
-			capUpperMask = 0
+		if initLastCap() == nil {
+			CAP_LAST_CAP = capLastCap
+			if capLastCap > 31 {
+				capUpperMask = (uint32(1) << (uint(capLastCap) - 31)) - 1
+			} else {
+				capUpperMask = 0
+			}
 		}
-	}
+	})
+	return capUpperMask, CAP_LAST_CAP
+}
+
+// get CAP_LAST_CAP
+// Notice: It is not compatible with old version,we can't use CAP_LAST_CAP directly before public func GetCapLastCap() or private func getCapMaskCapLast() is called.
+func GetCapLastCap() Cap {
+	_, capLastCap := getCapMaskCapLast()
+	return capLastCap
 }
 
 func initLastCap() error {
@@ -67,7 +79,8 @@ func initLastCap() error {
 }
 
 func mkStringCap(c Capabilities, which CapType) (ret string) {
-	for i, first := Cap(0), true; i <= CAP_LAST_CAP; i++ {
+	_, capLastCap := getCapMaskCapLast()
+	for i, first := Cap(0), true; i <= capLastCap; i++ {
 		if !c.Get(which, i) {
 			continue
 		}
@@ -292,7 +305,8 @@ func (c *capsV3) Full(which CapType) bool {
 	if (data[0] & 0xffffffff) != 0xffffffff {
 		return false
 	}
-	return (data[1] & capUpperMask) == capUpperMask
+	capMask, _ := getCapMaskCapLast()
+	return (data[1] & capMask) == capMask
 }
 
 func (c *capsV3) Set(which CapType, caps ...Cap) {
@@ -443,8 +457,9 @@ func (c *capsV3) Apply(kind CapType) (err error) {
 		if err != nil {
 			return
 		}
+		_, capLastCap := getCapMaskCapLast()
 		if (1<<uint(CAP_SETPCAP))&data[0].effective != 0 {
-			for i := Cap(0); i <= CAP_LAST_CAP; i++ {
+			for i := Cap(0); i <= capLastCap; i++ {
 				if c.Get(BOUNDING, i) {
 					continue
 				}
@@ -469,7 +484,8 @@ func (c *capsV3) Apply(kind CapType) (err error) {
 	}
 
 	if kind&AMBS == AMBS {
-		for i := Cap(0); i <= CAP_LAST_CAP; i++ {
+		_, capLastCap := getCapMaskCapLast()
+		for i := Cap(0); i <= capLastCap; i++ {
 			action := pr_CAP_AMBIENT_LOWER
 			if c.Get(AMBIENT, i) {
 				action = pr_CAP_AMBIENT_RAISE
@@ -547,7 +563,8 @@ func (c *capsFile) Full(which CapType) bool {
 	if (data[0] & 0xffffffff) != 0xffffffff {
 		return false
 	}
-	return (data[1] & capUpperMask) == capUpperMask
+	capMask, _ := getCapMaskCapLast()
+	return (data[1] & capMask) == capMask
 }
 
 func (c *capsFile) Set(which CapType, caps ...Cap) {

@@ -45,6 +45,7 @@ func TestState(t *testing.T) {
 
 	capf := new(capsFile)
 	capf.data.version = 2
+	_, cap_last_cap := getCapMaskCapLast()
 	for _, tc := range []struct {
 		name string
 		c    Capabilities
@@ -52,9 +53,9 @@ func TestState(t *testing.T) {
 		max  Cap
 	}{
 		{"v1", new(capsV1), EFFECTIVE | PERMITTED, CAP_AUDIT_CONTROL},
-		{"v3", new(capsV3), EFFECTIVE | PERMITTED | BOUNDING, CAP_LAST_CAP},
+		{"v3", new(capsV3), EFFECTIVE | PERMITTED | BOUNDING, cap_last_cap},
 		{"file_v1", new(capsFile), EFFECTIVE | PERMITTED, CAP_AUDIT_CONTROL},
-		{"file_v2", capf, EFFECTIVE | PERMITTED, CAP_LAST_CAP},
+		{"file_v2", capf, EFFECTIVE | PERMITTED, cap_last_cap},
 	} {
 		testEmpty(tc.name, tc.c, tc.sets)
 		tc.c.Fill(CAPS | BOUNDS)
@@ -63,14 +64,14 @@ func TestState(t *testing.T) {
 		tc.c.Clear(CAPS | BOUNDS)
 		testEmpty(tc.name, tc.c, tc.sets)
 		for i := CapType(1); i <= BOUNDING; i <<= 1 {
-			for j := Cap(0); j <= CAP_LAST_CAP; j++ {
+			for j := Cap(0); j <= cap_last_cap; j++ {
 				tc.c.Set(i, j)
 			}
 		}
 		testFull(tc.name, tc.c, tc.sets)
 		testGet(tc.name, tc.c, tc.sets, tc.max)
 		for i := CapType(1); i <= BOUNDING; i <<= 1 {
-			for j := Cap(0); j <= CAP_LAST_CAP; j++ {
+			for j := Cap(0); j <= cap_last_cap; j++ {
 				tc.c.Unset(i, j)
 			}
 		}
